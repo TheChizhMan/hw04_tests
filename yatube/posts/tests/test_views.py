@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -86,3 +87,16 @@ class PostsViewsTests(TestCase):
         for url in urls:
             response = self.authorized_client.get(url)
             self.assertIn(self.post, response.context['page_obj'])
+
+    def test_first_page_contains_ten_records(self):
+        """Тест пагинатора на превой странице."""
+        response = self.client.get(reverse('posts:index'))
+        self.assertEqual(len(response.context['page_obj']),
+                         settings.PAGE_SIZE)
+
+    def test_second_page_contains_three_records(self):
+        """Тест пагинатора на второй странице."""
+        response = self.client.get(reverse('posts:index') + '?page=2')
+        self.assertEqual(len(response.context['page_obj']), 3)
+        # Не могу сообразить, как сделать, чтобы тест сам понимал,
+        # что у нас осталось 3 записи на второй странице?
