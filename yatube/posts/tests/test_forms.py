@@ -1,16 +1,15 @@
-from posts.models import Post
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from django.contrib.auth import get_user_model
-
+from posts.models import Post
 
 User = get_user_model()
 
 
 class PostCreateEditFormTest(TestCase):
     def setUp(self):
-        self.user = get_user_model().objects.create_user(username='testuser',
-                                                         password='testpass')
+        self.user = User.objects.create_user(username='testuser',
+                                             password='testpass')
         self.post = Post.objects.create(text='Тестовый текст',
                                         author=self.user)
 
