@@ -1,4 +1,4 @@
-import settings
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
@@ -25,7 +25,7 @@ class PostModelTest(TestCase):
     def test_models_have_correct_object_names(self):
         """Проверяем, что у моделей корректно работает __str__."""
         expected_group_name = self.group.title
-        expected_post_name = self.post.text[settings.COUNT_TEXT]
+        expected_post_name = self.post.text[:settings.COUNT_TEXT]
         self.assertEqual(str(self.group), expected_group_name)
         self.assertEqual(str(self.post), expected_post_name)
 
