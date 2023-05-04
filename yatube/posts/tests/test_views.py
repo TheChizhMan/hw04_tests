@@ -11,7 +11,7 @@ class PostsViewsTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='testuser')
+        cls.user = User.objects.create(username='testuser')
         cls.group = Group.objects.create(title='Тестовый тайтл',
                                          slug='test-slug',
                                          description='Тестовое описание')
@@ -23,7 +23,7 @@ class PostsViewsTests(TestCase):
             )
 
     def setUp(self):
-        self.guest_client = Client()
+        self.guest_client = self.client
         self.user = PostsViewsTests.user
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
