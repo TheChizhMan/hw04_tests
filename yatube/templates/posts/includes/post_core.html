@@ -1,5 +1,4 @@
-{% block content %} 
-{% load thumbnail %}  
+  {% block content %}   
     <article>
       {% for post in page_obj %}
         <ul>
@@ -12,9 +11,6 @@
             Дата публикации: {{ post.pub_date|date:"d E Y" }}
           </li>
         </ul>
-        {% thumbnail post.image "960x540" crop="center" upscale=True as im %}
-          <img class="card-img my-2" src="{{ im.url }}" style="max-width: 960px; max-height: 540px; object-fit: cover;">
-        {% endthumbnail %}
         <p>{{ post.text }}</p> 
         <a href="{% url 'posts:post_detail' post.id %}">подробная информация</a>
         <br>
