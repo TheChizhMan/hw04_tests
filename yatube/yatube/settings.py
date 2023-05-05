@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'posts.apps.PostsConfig',
     'core.apps.CoreConfig',
     'about.apps.AboutConfig',
+    'sorl.thumbnail',
 ]
 
 MIDDLEWARE = [
@@ -134,6 +135,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Добавили статик.
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
@@ -150,6 +154,8 @@ PAGE_SIZE = (10)
 POST_TEST_COUNT = (13)
 COUNT_TEXT = (15)
 CHARACTER_LIMIT_IN_TITLE = (30)
+
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 # DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #  подключаем движок filebased.EmailBackend

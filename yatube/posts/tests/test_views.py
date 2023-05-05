@@ -94,9 +94,11 @@ class PostsViewsTests(TestCase):
         self.assertEqual(len(response.context['page_obj']),
                          settings.PAGE_SIZE)
 
-    def test_second_page_contains_three_records(self):
+    def test_second_page_correct_number_of_records(self):
         """Тест пагинатора на второй странице."""
+        total_records = Post.objects.count()
+        page_size = settings.PAGE_SIZE
+        expected_records_on_second_page = total_records - page_size
         response = self.client.get(reverse('posts:index') + '?page=2')
-        self.assertEqual(len(response.context['page_obj']), 3)
-        # Не могу сообразить, как сделать, чтобы тест сам понимал,
-        # что у нас осталось 3 записи на второй странице?
+        self.assertEqual(len(response.context['page_obj']),
+                         expected_records_on_second_page)
