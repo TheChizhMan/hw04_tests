@@ -2,12 +2,15 @@
 {% load thumbnail %}
 {% block title %} Последние обновления на сайте {% endblock %}
 <main>
-  {% block content %}   
+  {% block content %}
+  {% load cache %}
+  {% cache 20 sidebar %}   
     <h1>Последние обновления на сайте</h1>
     <article>
     {% include 'posts/includes/post_core.html' %}
     <br>
       {% include 'posts/includes/paginator.html' %} 
     </article>
+    {% endcache %} 
   {% endblock %} 
 </main>

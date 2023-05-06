@@ -112,3 +112,32 @@ class PostsViewsTests(TestCase):
         response = self.client.get(reverse('posts:index') + '?page=2')
         self.assertEqual(len(response.context['page_obj']),
                          expected_records_on_second_page)
+
+
+class CacheTestCase(TestCase):
+    @classmethod
+    def setUpClass(self):
+        super().setUpClass()
+        self.group = Group.objects.create(title='Test group',
+                                          slug='test-group')
+        self.user = get_user_model().objects.create_user(username='testuser')
+        self.post = Post.objects.create(text='test text',
+                                        group=self.group,
+                                        author=self.user)
+
+    def test_cache_local(self):
+        """Тест кеширования главной страницы."""
+        cache.set('key', 'value', 20)
+        self.assertEqual(cache.get('key'), 'value')
+
+    def test_cache(self):
+        """Тест для проверки кеширования главной страницы."""
+        cache.clear()
+        response = self.client.get('/')
+        self.assertContains(response, 'test text')
+        self.post.delete()
+        response = self.client.get('/')
+        self.assertContains(response, 'test text')
+        cache.clear()
+        response = self.client.get('/')
+        self.assertNotContains(response, 'test text')
