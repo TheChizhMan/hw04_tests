@@ -1,10 +1,10 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.core.cache import cache
 
-from posts.models import Group, Post
+from posts.models import Follow, Group, Post
 
 User = get_user_model()
 
@@ -141,3 +141,73 @@ class CacheTestCase(TestCase):
         cache.clear()
         response = self.client.get('/')
         self.assertNotContains(response, 'test text')
+
+
+'''class TestFollow(TestCase):
+    def setUp(self):
+        self.user1 = User.objects.create_user(username='user1',
+                                              email='user1@test.com',
+                                              password='testpassword')
+        self.user2 = User.objects.create_user(username='user2',
+                                              email='user2@test.com',
+                                              password='testpassword')
+        self.post = Post.objects.create(text='test text',
+                                        author=self.user2)
+        self.client.force_login(self.user1)
+
+    def test_follow(self):
+        """Может ли юзер подписаться и отписаться от другого пользователя"""
+        self.client.get(f'/{self.user2.username}/follow/')
+        self.assertTrue(Follow.objects.filter(user=self.user1,
+                                              author=self.user2).exists())
+        self.client.get(f'/{self.user2.username}/unfollow/')
+        self.assertFalse(Follow.objects.filter(user=self.user1,
+                                               author=self.user2).exists())
+
+    def test_new_post_in_feed(self):
+        """Проверяем, что новая запись от автора, на которого подписан
+        текущий пользователь, появляется в ленте текущего пользователя,
+        а после отписки от автора исчезает из ленты."""
+        self.client.get(f'/{self.user2.username}/follow/')
+        new_post = Post.objects.create(text='test text', author=self.user2)
+        response = self.client.get('/follow/')
+        self.assertContains(response, new_post.text)
+        self.client.get(f'/{self.user2.username}/unfollow/')
+        response = self.client.get('/follow/')
+        self.assertNotContains(response, new_post.text)
+        '''
+
+
+class FollowTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user1 = User.objects.create_user(username='user1',
+                                              password='password')
+        self.user2 = User.objects.create_user(username='user2',
+                                              password='password')
+        self.post = Post.objects.create(text='test post', author=self.user2)
+        self.client.login(username='user1', password='password')
+
+    def test_follow(self):
+        """Тест подписки авторизованного юзера.
+        И отображение в ленте."""
+        response = self.client.get(f'/profile/{self.user2.username}/follow/')
+        self.assertRedirects(response, f'/profile/{self.user2.username}/')
+        self.assertTrue(Follow.objects.filter(user=self.user1,
+                                              author=self.user2).exists())
+        response = self.client.get('/follow/')
+        self.assertContains(response, self.post.text)
+
+    def test_unfollow(self):
+        """Тест отписки авторизованного юзера.
+        И отображение в ленте."""
+        response = self.client.get(f'/profile/{self.user2.username}/follow/')
+        self.assertRedirects(response, f'/profile/{self.user2.username}/')
+        self.assertTrue(Follow.objects.filter(user=self.user1,
+                                              author=self.user2).exists())
+        response = self.client.get(f'/profile/{self.user2.username}/unfollow/')
+        self.assertRedirects(response, f'/profile/{self.user2.username}/')
+        self.assertFalse(Follow.objects.filter(user=self.user1,
+                                               author=self.user2).exists())
+        response = self.client.get('/follow/')
+        self.assertNotContains(response, self.post.text)

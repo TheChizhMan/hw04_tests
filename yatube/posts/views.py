@@ -5,8 +5,8 @@ from django.views.decorators.cache import cache_page
 
 from core.utils import paginator
 
-from .forms import PostForm, CommentForm
-from .models import Group, Post, Comment, Follow
+from .forms import CommentForm, PostForm
+from .models import Comment, Follow, Group, Post
 
 
 @cache_page(20, key_prefix='index_page')
@@ -112,10 +112,8 @@ def follow_index(request):
     # Получение списка авторов, на которых подписан текущий пользователь
     following = Follow.objects.filter(user=request.user).values_list('author',
                                                                      flat=True)
-
     # Получение списка постов от этих авторов
     posts = Post.objects.filter(author__in=following)
-
     context = {'posts': posts}
     return render(request, 'posts/follow.html', context)
 
@@ -124,12 +122,10 @@ def follow_index(request):
 def profile_follow(request, username):
     # Получение объекта пользователя, на которого подписываемся
     author = get_object_or_404(User, username=username)
-
     # Проверка, что пользователь не подписывается на самого себя
     if request.user != author:
         # Создание объекта Follow
         Follow.objects.get_or_create(user=request.user, author=author)
-
     return redirect('posts:profile', username=username)
 
 
@@ -137,8 +133,6 @@ def profile_follow(request, username):
 def profile_unfollow(request, username):
     # Получение объекта пользователя, от которого отписываемся
     author = get_object_or_404(User, username=username)
-
     # Удаление объекта Follow
     Follow.objects.filter(user=request.user, author=author).delete()
-
     return redirect('posts:profile', username=username)
