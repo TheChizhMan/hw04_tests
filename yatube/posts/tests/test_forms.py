@@ -69,7 +69,7 @@ class PostCreateEditFormTest(TestCase):
         self.assertEqual(self.post.text, data['text'])
 
     def test_edit_post_with_group_anonymous(self):
-        """Тест создания иредактирования анонимным пользователем."""
+        """Тест создания и редактирования анонимным пользователем."""
         self.client.logout()
         url = reverse('posts:post_edit', args=(self.post.id,))
         data = {'text': 'Измененный текст', 'group': self.group.id}

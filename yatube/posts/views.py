@@ -4,8 +4,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from core.utils import paginator
 
-from .forms import PostForm
-from .models import Group, Post
+from .forms import PostForm, CommentForm
+from .models import Group, Post, Comment
 
 
 def index(request):
@@ -42,9 +42,13 @@ def profile(request, username: str):
 def post_detail(request, post_id: int):
     post = get_object_or_404(Post, pk=post_id)
     post_list = post.author.post_set.count()
+    comments = Comment.objects.filter(post=post)
+    form = CommentForm()
     context = {
         'post': post,
         'post_count': post_list,
+        'comments': comments,
+        'form': form,
     }
     return render(request, 'posts/post_detail.html', context)
 
@@ -81,3 +85,15 @@ def post_edit(request, post_id: int):
         post.save()
         return redirect('posts:post_detail', post_id=post.id)
     return render(request, 'posts/create_post.html', context)
+
+
+@login_required
+def add_comment(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    form = CommentForm(request.POST or None)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.author = request.user
+        comment.post = post
+        comment.save()
+    return redirect('posts:post_detail', post_id=post_id)

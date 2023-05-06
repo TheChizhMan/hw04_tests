@@ -39,9 +39,10 @@
         {% if request.user == post.author %}
           <a class="btn btn-primary" href="{% url 'posts:post_edit' post_id=post.id %}">
             редактировать запись
-          </a>  
+          </a> 
         {% endif %}
+        {% include 'posts/includes/comments.html' %}
       </article>
     </div> 
   </main>
-{% endblock %} 
+{% endblock %}

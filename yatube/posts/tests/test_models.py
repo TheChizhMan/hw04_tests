@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from ..models import Group, Post
+from posts.models import Group, Post, Comment
 
 User = get_user_model()
 
@@ -52,3 +52,27 @@ class PostModelTest(TestCase):
                 self.assertEqual(
                     post._meta.get_field(field).help_text,
                     expected_help_text)
+
+
+class CommentModelTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        author = User.objects.create(username='testuser')
+        post = Post.objects.create(text='Test post',
+                                   author=author)
+        cls.comment = Comment.objects.create(post=post,
+                                             text='Test comment',
+                                             author=author)
+
+    def test_text_label(self):
+        comment = self.comment
+        field_label = comment._meta.get_field('text').verbose_name
+        self.assertEqual(field_label, 'Текст коментария')
+
+    def test_text_help_text(self):
+        comment = self.comment
+        help_text = comment._meta.get_field('text').help_text
+        self.assertEqual(help_text, 'Введите текст коментария')
+
+    def test_ordering(self):
+        self.assertEqual(Comment._meta.ordering, ['-created'])

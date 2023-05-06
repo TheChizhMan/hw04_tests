@@ -50,3 +50,29 @@ class Post(models.Model):
 
     def __str__(self):
         return self.text[:settings.COUNT_TEXT]
+
+
+class Comment(models.Model):
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Пост'
+    )
+    text = models.TextField(
+        verbose_name='Текст коментария',
+        help_text='Введите текст коментария'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Автор'
+    )
+    created = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата публикации'
+    )
+
+    class Meta:
+        ordering = ['-created']
