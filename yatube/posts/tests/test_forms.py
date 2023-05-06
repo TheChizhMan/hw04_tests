@@ -4,10 +4,10 @@ import tempfile
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase, override_settings
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from posts.models import Group, Post
+from posts.models import Group, Post, Comment
 
 User = get_user_model()
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
@@ -83,3 +83,62 @@ class PostCreateEditFormTest(TestCase):
         data = {'text': 'Тестовый текст'}
         response = self.client.post(url, data)
         self.assertRedirects(response, reverse('login') + '?next=' + url)
+
+
+class CommentFormTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Гость
+        cls.guest_client = Client()
+        # авториз польз
+        cls.user = User.objects.create(username='testuser')
+        # Клиент автора
+        cls.auth_client = Client()
+        # Авториз автор
+        cls.author = User.objects.create(username='author')
+        # авторизация автора
+        cls.auth_client.force_login(cls.author)
+        # Создание авторизированного пользователя
+        cls.authorized_client = Client()
+        # авторизация авторизированного пользователя
+        cls.authorized_client.force_login(cls.user)
+
+        cls.post = Post.objects.create(text='Тестовый пост',
+                                       author=cls.user)
+        cls.comment = Comment.objects.create(text='Тестовый комментарий',
+                                             author=cls.user,
+                                             post=cls.post)
+
+    def test_commenting(self):
+        """Тестируем возможность коментирования."""
+        expected_count_f = 1
+        self.assertEqual(Comment.objects.count(), expected_count_f)
+        self.assertEqual(self.comment.text, 'Тестовый комментарий')
+        self.assertEqual(self.comment.author.username, 'testuser')
+        self.assertEqual(self.comment.post.text, 'Тестовый пост')
+
+    def test_commenting_by_authorized_user(self):
+        """Тестируем возможность коментирования авторизованным."""
+        form_data = {'text': 'Тестовый комментарий'}
+        response = self.authorized_client.post(
+            f'/posts/{self.post.id}/comment/',
+            data=form_data,
+            follow=True)
+        self.assertRedirects(response, f'/posts/{self.post.id}/')
+        expected_count = 2
+        self.assertEqual(Comment.objects.count(), expected_count)
+        comment = Comment.objects.last()
+        self.assertEqual(comment.text, 'Тестовый комментарий')
+        self.assertEqual(comment.author.username, 'testuser')
+
+    def test_commenting_by_guest_user(self):
+        """Тестируем невозможность коментирования гостем."""
+        form_data = {'text': 'Тестовый комментарий'}
+        response = self.guest_client.post(
+            f'/posts/{self.post.id}/comment/',
+            data=form_data,
+            follow=True)
+        self.assertRedirects(
+            response,
+            f'/auth/login/?next=/posts/{self.post.id}/comment/')
