@@ -144,3 +144,10 @@ dmypy.json
 .history/
 
 .mypy_cache
+
+# Медиа файлы от пользователей
+.media/
+/media
+media/
+/posts1
+posts1/

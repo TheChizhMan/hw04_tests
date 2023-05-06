@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
+from django.core.cache import cache
 
 from posts.models import Group, Post
 
@@ -24,6 +25,7 @@ class PostsViewsTests(TestCase):
             )
 
     def setUp(self):
+        cache.clear()
         self.guest_client = self.client
         self.user = PostsViewsTests.user
         self.authorized_client = Client()
