@@ -22,7 +22,7 @@
             {% endif %}        
           </div>
           <div class="card-body">        
-            <form method="post" {% if post_id %}action="{% url 'posts:post_edit' post_id=post_id %}"{% endif %}>
+            <form method="post" {% if post_id %}action="{% url 'posts:post_edit' post_id=post_id %}"{% endif %}enctype="multipart/form-data">
               {% csrf_token %}
               {{ form.as_p }}
               <div class="d-flex justify-content-end">
