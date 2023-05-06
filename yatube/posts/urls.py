@@ -6,11 +6,9 @@ app_name = 'posts'
 
 
 urlpatterns = [
-    # Главная страница
     path('', views.index,
          name='index'),
 
-    # Отдельная страница с информацией о группах публикаций
     path('group/<slug:slug>/',
          views.group_posts,
          name='group_list'),
@@ -39,4 +37,17 @@ urlpatterns = [
     path('posts/<int:post_id>/comment/',
          views.add_comment,
          name='add_comment'),
+
+    # Список подписок
+    path('follow/', views.follow_index, name='follow_index'),
+
+    # Список подписчиков
+    path('profile/<str:username>/follow/',
+         views.profile_follow,
+         name='profile_follow'),
+
+    # Отписка
+    path('profile/<str:username>/unfollow/',
+         views.profile_unfollow,
+         name='profile_unfollow'),
 ]

@@ -77,3 +77,16 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ['-created']
+
+
+class Follow(models.Model):
+    user = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.CASCADE,
+        related_name='follower'
+    )
+    author = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.CASCADE,
+        related_name='following'
+    )

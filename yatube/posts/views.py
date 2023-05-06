@@ -6,7 +6,7 @@ from django.views.decorators.cache import cache_page
 from core.utils import paginator
 
 from .forms import PostForm, CommentForm
-from .models import Group, Post, Comment
+from .models import Group, Post, Comment, Follow
 
 
 @cache_page(20, key_prefix='index_page')
@@ -29,14 +29,20 @@ def group_posts(request, slug):
     return render(request, 'posts/group_list.html', context)
 
 
-def profile(request, username: str):
+def profile(request, username):
     user = get_object_or_404(User, username=username)
     post_list = user.post_set.all()
     page_obj = paginator(request, post_list)
+    following = False
+    if request.user.is_authenticated:
+        following = Follow.objects.filter(
+            user=request.user, author=user).exists()
+
     context = {
         'author': user,
         'page_obj': page_obj,
         'post_count': user.post_set.count(),
+        'following': following,
     }
     return render(request, 'posts/profile.html', context)
 
@@ -99,3 +105,40 @@ def add_comment(request, post_id):
         comment.post = post
         comment.save()
     return redirect('posts:post_detail', post_id=post_id)
+
+
+@login_required
+def follow_index(request):
+    # Получение списка авторов, на которых подписан текущий пользователь
+    following = Follow.objects.filter(user=request.user).values_list('author',
+                                                                     flat=True)
+
+    # Получение списка постов от этих авторов
+    posts = Post.objects.filter(author__in=following)
+
+    context = {'posts': posts}
+    return render(request, 'posts/follow.html', context)
+
+
+@login_required
+def profile_follow(request, username):
+    # Получение объекта пользователя, на которого подписываемся
+    author = get_object_or_404(User, username=username)
+
+    # Проверка, что пользователь не подписывается на самого себя
+    if request.user != author:
+        # Создание объекта Follow
+        Follow.objects.get_or_create(user=request.user, author=author)
+
+    return redirect('posts:profile', username=username)
+
+
+@login_required
+def profile_unfollow(request, username):
+    # Получение объекта пользователя, от которого отписываемся
+    author = get_object_or_404(User, username=username)
+
+    # Удаление объекта Follow
+    Follow.objects.filter(user=request.user, author=author).delete()
+
+    return redirect('posts:profile', username=username)
