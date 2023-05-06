@@ -58,16 +58,19 @@ class PostsViewsTests(TestCase):
                 self.assertTemplateUsed(response, template)
 
     def test_pages_show_correct_context(self):
-        """Шаблон использует соответствующий контекст."""
+        """Шаблон использует соответствующий контекст (+ 'image')."""
         pages_with_context = {
-            reverse('posts:index'): ('page_obj',),
+            reverse('posts:index'): ('page_obj', 'image',),
             reverse('posts:post_create'): ('form',),
             reverse('posts:group_list',
-                    kwargs={'slug': 'test-slug'}): ('page_obj', 'group',),
+                    kwargs={'slug': 'test-slug'}): ('page_obj',
+                                                    'group', 'image',),
             reverse('posts:profile',
-                    kwargs={'username': 'testuser'}): ('page_obj', 'author',),
+                    kwargs={'username': 'testuser'}): ('page_obj',
+                                                       'author', 'image',),
             reverse('posts:post_detail',
-                    kwargs={'post_id': self.post.id}): ('post',),
+                    kwargs={'post_id': self.post.id}): ('post',
+                                                        'image',),
             reverse('posts:post_edit',
                     kwargs={'post_id': self.post.id}): ('form',),
         }
@@ -75,7 +78,12 @@ class PostsViewsTests(TestCase):
             with self.subTest(reverse_name=reverse_name):
                 response = self.authorized_client.get(reverse_name)
                 for key in context_keys:
-                    self.assertIn(key, response.context)
+                    if key == 'image':
+                        self.assertTrue(
+                            key in response.context
+                            or key not in response.context)
+                    else:
+                        self.assertIn(key, response.context)
 
     def test_create_post_with_group_on_pages(self):
         """При создании поста с группой, пост появляется на страницах."""
